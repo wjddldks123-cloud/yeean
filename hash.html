@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<input id="pw" placeholder="비밀번호 입력">
+<button onclick="(async()=>{
+  const t=pw.value;
+  const b=new TextEncoder().encode(t);
+  const d=await crypto.subtle.digest('SHA-256',b);
+  const a=[...new Uint8Array(d)]
+    .map(x=>x.toString(16).padStart(2,'0')).join('');
+  prompt('SHA-256 해시값',a);
+})();">해시 구하기</button>

@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+ 
+  <title>로그인</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      display:flex; align-items:center; justify-content:center;
+      height:100vh; margin:0;
+      background: url('control.jpg') no-repeat center center/cover; /* 배경 이미지 */
+      backdrop-filter: blur(5px);
+    }
+
+    .glass-card {
+      width: 360px;
+      padding: 32px 24px;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.2); /* 투명한 흰색 */
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+      backdrop-filter: blur(12px); /* 유리 효과 핵심 */
+      -webkit-backdrop-filter: blur(12px); /* Safari 대응 */
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      text-align: center;
+      color: #fff;
+    }
+
+    h1 {
+      font-size: 20px;
+      margin-bottom: 12px;
+    }
+    p {
+      font-size: 15px;
+      margin-bottom: 20px;
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    input, button {
+      width:80%;
+      padding:12px;
+      margin: 6px 0;
+      border-radius:12px;
+      border:none;
+      outline:none;
+      font-size:16px;
+    }
+
+    input {
+      background: rgba(255, 255, 255, 0.2);
+      color:#fff;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+    input::placeholder {
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    button {
+      background: rgba(26,115,232,0.8);
+      color:#fff;
+      font-weight:bold;
+      cursor:pointer;
+      transition: 0.2s;
+    }
+    button:hover {
+      background: rgba(26,115,232,1);
+    }
+
+    .msg {
+      font-size:12px;
+      color:#ffcccc;
+      height:16px;
+      margin-top:10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="glass-card">
+    <h1>🔒 관제팀 전용 로그인</h1>
+    <p>비밀번호를 입력하세요</p>
+    <input id="pw" type="password" placeholder="비밀번호" autocomplete="current-password" />
+    <button id="loginBtn" type="button">접속하기</button>
+    <div class="msg" id="msg" aria-live="polite"></div>
+  </div>
+
+  <script>
+    const PASSWORD_SHA256 = "4d17bdb3db3660537506883db4b4daff641695c0d048cf95e8a10f970adb94aa";
+    const TOKEN_KEY = "site_auth_token";
+    const TOKEN_TTL_MIN = 120;
+
+    async function sha256Hex(t) {
+      const e = new TextEncoder().encode(t);
+      const b = await crypto.subtle.digest("SHA-256", e);
+      return Array.from(new Uint8Array(b)).map(x => x.toString(16).padStart(2, "0")).join("");
+    }
+
+    function setToken() {
+      const exp = Date.now() + TOKEN_TTL_MIN * 60 * 1000;
+      localStorage.setItem(TOKEN_KEY, JSON.stringify({ ok: true, exp }));
+    }
+
+    const pwInput = document.getElementById("pw");
+    const loginBtn = document.getElementById("loginBtn");
+    const msgEl = document.getElementById("msg");
+
+    // 공통 로그인 처리 함수
+    async function doLogin() {
+      msgEl.textContent = ""; // 이전 메시지 제거
+      const pw = pwInput.value.trim();
+      // (선택) 빈 입력 처리
+      if (!pw) {
+        msgEl.textContent = "🔸 비밀번호를 입력하세요.";
+        pwInput.focus();
+        return;
+      }
+
+      try {
+        const hash = await sha256Hex(pw);
+        if (hash === PASSWORD_SHA256) {
+          setToken();
+          // 성공하면 루트로 이동 (index가 아닌 /)
+          window.location.replace("/");
+        } else {
+          msgEl.textContent = "❌ 비밀번호가 올바르지 않습니다.";
+          pwInput.focus();
+          pwInput.select();
+        }
+      } catch (err) {
+        console.error("sha256 error:", err);
+        msgEl.textContent = "⚠️ 내부 오류가 발생했습니다. 다시 시도하세요.";
+      }
+    }
+
+    // 버튼 클릭 시 로그인
+    loginBtn.addEventListener("click", doLogin);
+
+    // 입력창에서 Enter 키 누르면 로그인 (keydown 사용: Enter 감지에 안정적)
+    pwInput.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        doLogin();
+      }
+    });
+
+    // 페이지 로드 시 입력창에 포커스 (사용자 편의)
+    pwInput.focus();
+  </script>
+</body>

@@ -1,0 +1,257 @@
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  background: url("control.jpg") no-repeat center center fixed;
+  background-size: cover;
+}
+
+#title1 {
+  text-align: center;
+  font-size: 4rem;
+  margin-top: 0%;
+  background-color: rgba(0, 255, 255, 0.0);
+  color: white;
+  text-shadow: 1px 1px 0 #000, -2px -1px 0 #000;
+}
+#toggleMenuBtn { font-size: 15px; }
+
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 280px;
+  transform: translateX(calc(-100% + 50px));
+  transition: transform .25s ease;
+  background: rgba(60, 60, 60, 0.25);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  padding: 15px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  z-index: 1000;
+  font-size: 18px;
+  overflow-y: auto;
+}
+
+.sidebar:hover {
+  transform: translateX(0);
+}
+
+.sidebar.fixed {
+  transform: translateX(0) !important;
+}
+
+.sidebar a {
+  display: block;
+  width: 100%;
+  padding: 10px 12px;
+  color: #fff;
+  text-decoration: none;
+  border-radius: 8px;
+  white-space: nowrap;
+  transition: background-color .2s ease;
+}
+
+.sidebar a:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.content {
+  margin-left: 50px;
+  padding: 30px;
+  transition: margin-left .25s ease;
+}
+
+.sidebar:hover ~ .content {
+  margin-left: 220px;
+}
+
+.sidebar.fixed ~ .content {
+  margin-left: 250px;
+}
+
+.sidebar button {
+  display: block;
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+  background: rgba(255, 255, 255, 0);
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+}
+
+.sidebar button:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.content {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: 100vh;
+  padding-top: 40px;
+  overflow-y: auto;
+}
+
+.center-box {
+  background-color: rgba(60, 60, 60, 0.25);
+  padding: 50px;
+  border-radius: 30px;
+  box-shadow: 0 4px 20px rgba(60, 60, 60, 0.35);
+  text-align: center;
+  max-width: 900px;
+  width: 80%;
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+}
+
+.center-box h2 {
+  font-size: 28px;
+  font-weight: 700;
+  color: white;
+  margin-bottom: 16px;
+}
+
+.bookmark-grid {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 40px;
+  margin-top: 100px;
+  row-gap: 50px;
+}
+
+.bookmark {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-decoration: none;
+  color: white;
+  font-size: 15px;
+  transition: transform .15s ease;
+}
+
+.bookmark img {
+  width: 64px;
+  height: 64px;
+  border-radius: 20%;
+  object-fit: cover;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+  border: 3px solid #fff;
+  transition: transform .13s ease, box-shadow .2s ease;
+}
+
+.bookmark img:hover {
+  transform: scale(1.45);
+  box-shadow: 0 6px 12px rgba(0,0,0,0.4);
+}
+
+.bookmark span {
+  margin-top: 6px;
+}
+
+.clock {
+  font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  text-align: center;
+  margin: 15px auto 0 auto;
+  width: fit-content;
+
+}
+
+.clock-time {
+  font-size: 42px;
+  font-weight: 700;
+  color: #fff;
+  text-shadow: 0 0 8px rgba(0, 0, 0, 0.4);
+}
+
+.clock-date {
+  font-size: 20px;
+  color: rgba(255, 255, 255, 0.9);
+  margin-top: 6px;
+}
+
+.clock-time .blink {
+  animation: blink 1s steps(1, end) infinite;
+}
+
+.checklist-section {
+  margin: 56px auto 0;
+  max-width: 640px;
+  text-align: center;
+}
+
+.checklist {
+  margin: 0;
+  padding: 22px 24px;
+  list-style: none;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.06));
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12), 0 8px 28px rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.checklist-item + .checklist-item {
+  margin-top: 12px;
+}
+
+.checklist-item label {
+  width: 100%;
+  max-width: 420px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 20px 1fr;
+  align-items: center;
+  column-gap: 12px;
+  color: #fff;
+  font-size: 17px;
+  cursor: pointer;
+  text-align: left;
+}
+
+.checklist-item label span {
+  line-height: 1.35;
+}
+
+.checklist-item input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.34), rgba(255, 255, 255, 0.08));
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.22), 0 2px 6px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  position: relative;
+}
+
+.checklist-item input[type="checkbox"]:checked {
+  border-color: rgba(111, 241, 255, 0.95);
+  background: linear-gradient(145deg, rgba(111, 241, 255, 0.65), rgba(0, 160, 200, 0.38));
+}
+
+.checklist-item input[type="checkbox"]:checked::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 6px;
+  width: 5px;
+  height: 10px;
+  border: solid rgba(255, 255, 255, 0.95);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+@keyframes blink {
+  50% { opacity: 0.4; }
+}

@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "../yeean"
+		},
+		{
+			"path": "."
+		},
+		{
+			"path": "../yeean **"
+		}
+	],
+	"settings": {}
+}

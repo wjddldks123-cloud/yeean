@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>사다리 게임 (네온/유리)</title>
+  <style>
+    :root{
+      --glass-bg: rgba(12,16,22,0.42);
+      --glass-stroke: rgba(255,255,255,0.16);
+      --glass-shadow: 0 24px 48px rgba(0,0,0,0.45);
+      --accent: #00ffaa;           /* 네온 민트 */
+      --accent-soft: rgba(0,255,170,0.55);
+      --text: #eef8ff;
+      --text-dim: rgba(230,245,255,0.8);
+    }
+
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0; 
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      background: url("control.jpg") no-repeat center center fixed;
+      background-size: cover;
+      color: var(--text);
+    }
+
+    .backdrop { position: fixed; inset: 0; pointer-events:none; }
+    .veil { position:absolute; inset:0; background: linear-gradient(180deg, rgba(0,0,0,.22), rgba(0,0,0,.32)); backdrop-filter: blur(2px); }
+
+    .wrap { position: relative; z-index: 1; min-height: 100vh; padding: 28px 20px 44px; display: grid; gap: 16px; grid-template-columns: 340px 1fr; }
+
+    .glass { background: var(--glass-bg); border: 1px solid var(--glass-stroke); border-radius: 18px; box-shadow: var(--glass-shadow); backdrop-filter: blur(14px) saturate(110%); }
+
+    .panel { padding: 16px; }
+    .panel h1 { margin: 6px 0 12px; font-size: 22px; letter-spacing: .2px; text-shadow: 0 1px 0 #000, 0 0 10px rgba(0,255,200,.35); }
+    .field { margin: 12px 0; }
+    .field label { display:block; font-size: 13px; color: var(--text-dim); margin-bottom: 8px; }
+    .field textarea { width: 100%; min-height: 150px; resize: vertical; border-radius: 14px; border: 1px solid var(--glass-stroke); background: rgba(0,0,0,0.35); color: var(--text); padding: 12px; outline: none; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.04); }
+
+    .row { display:grid; gap: 8px; grid-template-columns: 1fr 1fr; }
+    .row input { width: 100%; border-radius: 12px; border: 1px solid var(--glass-stroke); background: rgba(0,0,0,0.35); color: var(--text); padding: 10px 12px; outline: none; }
+
+    .buttons { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px; margin-top: 10px; }
+    .buttons .wide { grid-column: 1/-1; }
+    button { height: 42px; border-radius: 12px; border: 1px solid var(--accent-soft); background: linear-gradient(180deg, rgba(0,255,200,.16), rgba(0,140,255,.12)); color: var(--text); font-weight: 700; letter-spacing: 0.3px; cursor: pointer; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.06), 0 6px 18px rgba(0,0,0,0.35); transition: transform .08s ease, filter .12s ease, background .18s ease; }
+    button:hover { filter: brightness(1.08) saturate(1.05); }
+    button:active { transform: translateY(1px); }
+
+    .stage { padding: 12px; display:grid; grid-template-rows: auto 1fr auto; gap: 10px; }
+    .stage-head { display:flex; align-items:center; justify-content:space-between; gap: 12px; }
+    .stage-head .title { font-size: 20px; font-weight: 800; text-shadow: 0 1px 0 #000, 0 0 10px rgba(0,255,200,.35); }
+    .stage-head .info { font-size:12px; color: var(--text-dim); }
+
+    .canvas-wrap { position: relative; overflow: hidden; border-radius: 14px; border: 1px dashed rgba(255,255,255,0.2); background: rgba(0,0,0,0.18); min-height: 360px; }
+    canvas { display:block; width: 100%; height: 100%; }
+
+    .labels { display:grid; grid-template-columns: repeat(3,1fr); gap: 8px; margin-top: 4px; }
+    .badge { padding: 8px 10px; border-radius: 12px; background: rgba(0,0,0,0.35); border: 1px solid var(--glass-stroke); display:flex; align-items:center; justify-content:center; min-height: 38px; text-align:center; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.04); }
+
+    @media (max-width: 980px) { .wrap { grid-template-columns: 1fr; } .labels { grid-template-columns: repeat(2,1fr); } }
+  </style>
+</head>
+<body>
+  <div class="backdrop"><div class="veil"></div></div>
+
+  <div class="wrap">
+    <!-- 좌측 컨트롤 패널 -->
+    <aside class="glass panel" aria-label="사다리 게임 설정">
+      <h1>사다리 게임</h1>
+      <div class="field">
+        <label>참가자 (한 줄에 한 명씩)</label>
+        <textarea id="names" placeholder="예: \n최식현\n이아린\n정이안\n..."></textarea>
+      </div>
+      <div class="field">
+        <label>결과 라벨 (선택) — 비우면 1,2,3...</label>
+        <textarea id="targets" placeholder="예: \n1등 상품\n2등 상품\n꽝\n..."></textarea>
+      </div>
+      <div class="row field">
+        <div>
+          <label>가로 발판 밀도 (1~10)</label>
+          <input id="density" type="number" min="1" max="10" value="5" />
+        </div>
+        <div>
+          <label>세로 길이(px)</label>
+          <input id="ladderHeight" type="number" min="300" max="1400" value="700" />
+        </div>
+      </div>
+      <div class="buttons">
+        <button id="shuffle">이름 섞기</button>
+        <button id="generate">사다리 생성</button>
+        <button id="playOne">한 명 재생</button>
+        <button id="playAll">전체 재생</button>
+        <button id="clear" class="wide">지우기 / 초기화</button>
+      </div>
+    </aside>
+
+    <!-- 우측 스테이지 -->
+    <section class="glass stage" aria-label="사다리 보드">
+      <div class="stage-head">
+        <div class="title">보드</div>
+        <div class="info" id="info">준비됨</div>
+      </div>
+      <div class="canvas-wrap" id="canvasWrap">
+        <canvas id="board" width="1400" height="800" aria-label="사다리 캔버스"></canvas>
+      </div>
+      <div class="labels" id="resultBadges" aria-live="polite"></div>
+    </section>
+  </div>
+
+  <script>
+  // ===== 안전 유틸 =====
+  const $ = (sel) => document.querySelector(sel);
+  const byLine = (text) => (text||'').split(/\n+/).map(s=>s.trim()).filter(Boolean);
+  const rand = (min, max) => Math.random() * (max - min) + min;
+
+  // ===== 전역 상태 =====
+  let dpr = 1; // 현재 캔버스 DPR
+  let state = {
+    names: [], targets: [], cols: 0, rungs: [],
+    height: 700, paddingX: 80, topSpace: 64, bottomSpace: 64,
+    neon: '#00ffaa', neonGlow: 'rgba(0,255,170,0.9)'
+  };
+
+  const canvas = $('#board');
+  const ctx = canvas.getContext('2d');
+  const wrap = $('#canvasWrap');
+
+  function resizeCanvasToWrap() {
+    const rect = wrap.getBoundingClientRect();
+    const w = Math.max(320, Math.floor(rect.width));
+    const h = Math.max(parseInt($('#ladderHeight').value||'700',10) + 148, 360);
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = Math.floor(w * dpr);
+    canvas.height = Math.floor(h * dpr);
+    canvas.style.width = w + 'px';
+    canvas.style.height = h + 'px';
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+
+  function getColumnXs(n) {
+    const W = wrap.getBoundingClientRect().width;
+    const innerW = Math.max(W - state.paddingX*2, 200);
+    const gap = innerW / Math.max(n-1, 1);
+    const xs = [];
+    for (let i=0;i<n;i++) xs.push(state.paddingX + i*gap);
+    return xs;
+  }
+
+  function clearBoard() {
+    resizeCanvasToWrap();
+    ctx.clearRect(0,0,canvas.width, canvas.height);
+
+    // 은은한 배경
+    const g = ctx.createLinearGradient(0,0,0,canvas.height);
+    g.addColorStop(0, 'rgba(0,0,0,0.15)');
+    g.addColorStop(1, 'rgba(255,255,255,0.05)');
+    ctx.fillStyle = g;
+    ctx.fillRect(0,0,canvas.width, canvas.height);
+
+    // 테두리 가이드 (CSS px 기준으로 계산)
+    const pxW = canvas.width / dpr, pxH = canvas.height / dpr;
+    ctx.save();
+    ctx.strokeStyle = 'rgba(255,255,255,0.14)';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(12, 12, Math.max(0, pxW-24), Math.max(0, pxH-24));
+    ctx.restore();
+
+    // 세로줄
+    const xs = getColumnXs(state.cols);
+    ctx.save();
+    ctx.strokeStyle = 'rgba(255,255,255,0.88)';
+    ctx.lineWidth = 3;
+    xs.forEach(x => { ctx.beginPath(); ctx.moveTo(x, state.topSpace); ctx.lineTo(x, state.topSpace + state.height); ctx.stroke(); });
+    ctx.restore();
+
+    drawLabels();
+  }
+
+  function drawLabels(mapping) {
+    const xs = getColumnXs(state.cols);
+    ctx.save();
+    ctx.fillStyle = 'rgba(255,255,255,0.97)';
+    ctx.textAlign = 'center';
+    ctx.font = '700 14px system-ui, -apple-system, Segoe UI, Roboto, sans-serif';
+
+    state.names.forEach((n, i) => { ctx.shadowColor = 'rgba(0,0,0,.65)'; ctx.shadowBlur = 4; ctx.fillText(n, xs[i], Math.max(18, state.topSpace-18)); });
+
+    const tgts = state.targets.length ? state.targets : Array.from({length:state.names.length}, (_,i)=>String(i+1));
+    tgts.forEach((t, i) => { ctx.shadowColor = 'rgba(0,0,0,.7)'; ctx.shadowBlur = 4; ctx.fillText(t, xs[i], state.topSpace + state.height + 26); });
+
+    ctx.restore();
+
+    const holder = $('#resultBadges');
+    holder.innerHTML = '';
+    if (mapping) {
+      mapping.forEach((toIdx, fromIdx) => {
+        const el = document.createElement('div');
+        el.className = 'badge';
+        const tgts2 = state.targets.length ? state.targets : Array.from({length:state.names.length}, (_,i)=>String(i+1));
+        el.textContent = `${state.names[fromIdx]} → ${tgts2[toIdx]}`;
+        holder.appendChild(el);
+      });
+    }
+  }
+
+  function generateRungs() {
+    const density = Math.min(10, Math.max(1, parseInt($('#density').value||'5',10)));
+    const levels = state.height;
+    const cols = state.cols;
+    const minGap = 28;
+    const targetCount = Math.max(0, Math.round((cols-1) * density * (levels / 600)));
+
+    const rungs = [];
+    let attempts = 0;
+    while (rungs.length < targetCount && attempts < targetCount * 30) {
+      attempts++;
+      const i = Math.floor(rand(0, Math.max(1, cols-1)));
+      const y = Math.floor(rand(0, levels));
+      const clash = rungs.some(r => r.i === i && Math.abs(r.y - y) < minGap);
+      const neighborClash = rungs.some(r => Math.abs(r.i - i) === 1 && Math.abs(r.y - y) < 10);
+      if (!clash && !neighborClash) rungs.push({ i, y });
+    }
+    rungs.sort((a,b)=> a.y - b.y);
+    state.rungs = rungs;
+  }
+
+  function drawRungs() {
+    const xs = getColumnXs(state.cols);
+    ctx.save();
+    ctx.strokeStyle = 'rgba(0, 255, 170, 0.95)';
+    ctx.shadowColor = 'rgba(0,255,170,0.6)';
+    ctx.shadowBlur = 6;
+    ctx.lineWidth = 3;
+    state.rungs.forEach(({i, y}) => {
+      const yPix = state.topSpace + y;
+      ctx.beginPath(); ctx.moveTo(xs[i], yPix); ctx.lineTo(xs[i+1], yPix); ctx.stroke();
+    });
+    ctx.restore();
+  }
+
+  function computeMapping() {
+    // 상단 인덱스 -> 하단 인덱스
+    const cols = state.cols;
+    // 각 상단에서 시작하여 내려가며 위치 추적
+    const result = [];
+    for (let start=0; start<cols; start++) {
+      let col = start;
+      for (const r of state.rungs) {
+        if (r.i === col) col = col + 1; else if (r.i + 1 === col) col = col - 1;
+      }
+      result[start] = col;
+    }
+    return result;
+  }
+
+  function getPathPoints(fromIdx) {
+    const xs = getColumnXs(state.cols);
+    let col = fromIdx;
+    const pts = [{ x: xs[col], y: state.topSpace }];
+    for (const r of state.rungs) {
+      const yPix = state.topSpace + r.y;
+      pts.push({ x: xs[col], y: yPix });
+      if (r.i === col)      { pts.push({ x: xs[col+1], y: yPix }); col = col + 1; }
+      else if (r.i + 1 === col) { pts.push({ x: xs[col-1], y: yPix }); col = col - 1; }
+    }
+    pts.push({ x: xs[col], y: state.topSpace + state.height });
+    return { pts, toIdx: col };
+  }
+
+  function pathLength(pts) {
+    let len = 0; for (let i=1;i<pts.length;i++){ const a=pts[i-1], b=pts[i]; len += Math.hypot(b.x-a.x, b.y-a.y);} return len;
+  }
+
+  function drawLen(pts, len) {
+    let remain = len;
+    for (let i=1;i<pts.length;i++) {
+      const a = pts[i-1], b = pts[i];
+      const seg = Math.hypot(b.x-a.x, b.y-a.y);
+      ctx.beginPath(); ctx.moveTo(a.x, a.y);
+      if (remain >= seg) { ctx.lineTo(b.x, b.y); ctx.stroke(); remain -= seg; }
+      else { const r = Math.max(0, remain/seg); ctx.lineTo(a.x + (b.x-a.x)*r, a.y + (b.y-a.y)*r); ctx.stroke(); break; }
+    }
+  }
+
+  // 네온 경로 애니메이션 (에러 방지용 방어 코드 포함)
+  async function animatePath(fromIdx, color = state.neon) {
+    const { pts, toIdx } = getPathPoints(fromIdx);
+    const speed = 2200;
+    const totalLen = pathLength(pts);
+    const start = performance.now();
+
+    return new Promise((resolve) => {
+      const step = (now) => {
+        const t = Math.min(1, (now - start) / speed);
+        const len = totalLen * t;
+        clearBoard();
+        drawRungs();
+        // 글로우 레이어
+        ctx.save(); ctx.lineJoin='round'; ctx.lineCap='round'; ctx.shadowColor = state.neonGlow; ctx.shadowBlur = 18; ctx.strokeStyle = color; ctx.lineWidth = 8; drawLen(pts, len); ctx.restore();
+        // 하이라이트 레이어
+        ctx.save(); ctx.lineJoin='round'; ctx.lineCap='round'; ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0; ctx.strokeStyle = 'white'; ctx.globalAlpha = .9; ctx.lineWidth = 3.2; drawLen(pts, len); ctx.restore();
+        if (t < 1) requestAnimationFrame(step); else resolve(toIdx);
+      };
+      requestAnimationFrame(step);
+    });
+  }
+
+  // ===== 이벤트 =====
+  function readInputs() {
+    state.names = byLine($('#names').value);
+    state.targets = byLine($('#targets').value);
+    state.cols = Math.max(2, state.names.length);
+    state.height = Math.min(1400, Math.max(300, parseInt($('#ladderHeight').value||'700',10)));
+  }
+
+  function regenerate() {
+    readInputs();
+    clearBoard();
+    if (state.cols < 2) { $('#info').textContent = '참가자 2명 이상이 필요합니다'; return; }
+    generateRungs();
+    drawRungs();
+    const mapping = computeMapping();
+    drawLabels(mapping);
+    $('#info').textContent = `참가자 ${state.names.length}명, 발판 ${state.rungs.length}개`;
+  }
+
+  $('#generate').addEventListener('click', regenerate);
+  $('#shuffle').addEventListener('click', () => {
+    const list = byLine($('#names').value);
+    for (let i=list.length-1;i>0;i--) { const j = Math.floor(Math.random()*(i+1)); [list[i], list[j]] = [list[j], list[i]]; }
+    $('#names').value = list.join('\n');
+    regenerate();
+  });
+
+  $('#clear').addEventListener('click', () => {
+    $('#names').value = '';
+    $('#targets').value = '';
+    $('#density').value = 5;
+    $('#ladderHeight').value = 700;
+    state = { ...state, rungs: [], names: [], targets: [], cols: 0 };
+    clearBoard();
+    $('#resultBadges').innerHTML = '';
+    $('#info').textContent = '초기화됨';
+  });
+
+  $('#playOne').addEventListener('click', async () => {
+    readInputs(); if (state.cols < 2) { $('#info').textContent = '참가자 2명 이상이 필요합니다'; return; }
+    if (state.rungs.length === 0) { generateRungs(); drawRungs(); }
+    const idx = Math.floor(Math.random()*state.cols);
+    const to = await animatePath(idx);
+    const tgts = state.targets.length ? state.targets : Array.from({length:state.names.length}, (_,i)=>String(i+1));
+    $('#info').textContent = `${state.names[idx]} → ${tgts[to]}`;
+  });
+
+  $('#playAll').addEventListener('click', async () => {
+    readInputs(); if (state.cols < 2) { $('#info').textContent = '참가자 2명 이상이 필요합니다'; return; }
+    if (state.rungs.length === 0) { generateRungs(); drawRungs(); }
+    $('#info').textContent = '전체 재생 중...';
+    const results = [];
+    for (let i=0;i<state.cols;i++) { const to = await animatePath(i); results.push([i,to]); await new Promise(r=>setTimeout(r, 200)); }
+    const mapping = results.sort((a,b)=>a[0]-b[0]).map(([from,to])=>to);
+    clearBoard(); drawRungs(); drawLabels(mapping);
+    $('#info').textContent = '완료';
+  });
+
+  window.addEventListener('resize', () => { clearBoard(); drawRungs(); });
+
+  // 데모 데이터
+  $('#names').value = ['고건호','이아린','정이안','전영훈'].join('\n');
+  $('#targets').value = ['☠️'].join('\n');
+  regenerate();
+  </script>
+</body>
+</html>
+
+  

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="main_style.css" />
+  <title>이안😎 웹페이지</title>
+  <script src="main.js" defer></script>
+  <script src="/auth-guard.js" defer></script>
+</head>
+
+<body>
+  <h1 id="title1"></h1>
+
+  <aside id="menu1" class="sidebar">
+    <button id="toggleMenuBtn">📍메뉴 고정/해제📍</button>
+    <a href="/">🏠HOME</a>
+    <a href="https://hikman.multion.synology.me" target="_blank">🧭HIKVISION</a>
+    <a href="https://ctrl.multi-on.kr/storeinfo/store_info_list" target="_blank">📂매장 관리</a>
+    <a href="https://ctrl.multi-on.kr/multipass/entrance_list" target="_blank">✔출입인증 관리</a>
+    <a href="https://ctrl.multi-on.kr/ctrltime/change_req_time_list" target="_blank">⌚당일시간 변경</a>
+    <a href="https://multion.synology.me/oo/r/obgCkmHxrfG5yyv39qItO00rwRfMrsql#tid=25" target="_blank">✅원복현황(체크)</a>
+    <a href="https://multion.synology.me/oo/r/15m7uQ8wH0OchX3hIjj4Upyd27JoN5Er#tid=148" target="_blank">📅 근무표</a>
+    <a href="https://multion.synology.me/?launchApp=SYNO.Cal.Application&SynoToken=HQZGx17xi48ok#month/2025-09-07@nav_panel@selected_date" target="_blank">📆 캘린더</a>
+    <a href="https://multion.synology.me/oo/r/16gWpF26U2AkJPIdHCTyU6xbCZOMDe7l#tid=1" target="_blank">🕐민철님 시간체크</a>
+    <a href="https://multion.synology.me/oo/r/12T9eE6QKm8U7wIRdiib5bIylbo3BOOI#tid=1" target="_blank">⛳ 골프 시간표</a>
+    <a href="https://partner.365d24h.net/mton/signin" target="_blank">⛳ 연중무휴</a>
+    <a href="./downloads/index.html">📦 다운로드</a>
+    <a href="https://mt5434.netlify.app" target="_blank">📦 재설치 링크</a>
+    <a href="https://docs.google.com/spreadsheets/d/1EtnPa3q_pl-S3tJkI-IrCP6qy6XHQxN-VmIfKu6kq3k/edit?gid=0#gid=0" target="_blank">📢notice</a>
+    <a href="https://multion.synology.me/oo/r/wTVtbPNq4w6gPuDzvdAOGhzbbXGlhFeq" target="_blank">🔒각종암호</a>
+    <a href="https://multion.synology.me/oo/r/12xor6zTyC0vKu2xv1xU57xEzITVFU9X" target="_blank">🔊방송실행링크</a>
+    <a href="./ladder game/index.html">☠️근무자 뽑기</a>
+  </aside>
+
+  <main class="content">
+    <div class="center-box">
+      <div id="clock" class="clock">
+        <div class="clock-time">00:00:00</div>
+        <div class="clock-date">0000.00.00 (월)</div>
+      </div>
+
+      <h2>Bookmarks</h2>
+      <div class="bookmark-grid">
+        <a href="https://multion.synology.me/?launchApp=SYNO.SDS.Drive.Application#/signin" target="_blank" class="bookmark">
+          <div class="icon-wrap">
+            <img src="icons/synology.png" alt="Synology Drive">
+          </div>
+          <span>Synology</span>
+        </a>
+
+        <a href="https://multion.synology.me/?launchApp=SYNO.SDS.Chat.Application" target="_blank" class="bookmark">
+          <div class="icon-wrap">
+            <img src="icons/chat.png" alt="chat">
+          </div>
+          <span>chat</span>
+        </a>
+
+        <a href="https://ctrl.multi-on.kr/mton/signin" target="_blank" class="bookmark">
+          <div class="icon-wrap">
+            <img src="icons/ctrl.png" alt="Multi-on">
+          </div>
+          <span>CTRL</span>
+        </a>
+
+        <a href="https://new.capslive.co.kr/" target="_blank" class="bookmark">
+          <div class="icon-wrap">
+            <img src="icons/caps.png" alt="Capslive">
+          </div>
+          <span>Caps</span>
+        </a>
+
+        <a href="https://www.notion.com/ko" target="_blank" class="bookmark">
+          <div class="icon-wrap">
+            <img src="icons/notion.png" alt="Notion">
+          </div>
+          <span>Notion</span>
+        </a>
+
+        <a href="https://nocodb.multion-dev.synology.me/dashboard/#/nc/pjyp6cac2w4hz7j/mi7mbdoe22d5q23" target="_blank" class="bookmark">
+          <div class="icon-wrap">
+            <img src="icons/nocodb.png" alt="nocodb">
+          </div>
+          <span>NocoDB</span>
+        </a>
+      </div>
+
+      <section class="checklist-section" aria-labelledby="checklist-title">
+        <h2 id="checklist-title">신규매장 시작시 체크리스트</h2>
+        <ul id="startupChecklist" class="checklist"></ul>
+      </section>
+    </div>
+  </main>
+</body>
+</html>
